@@ -24,7 +24,11 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         // TODO #1: Retrieve and store a reference to the Firebase Database. We'll store/retrieve
         // messages via a "messages" node. (This node does not need to exist prior to using it;
         // Firebase will create it automatically for us in this case.)
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        final DatabaseReference messagesRef = db.getReference("messages");
 
         final EditText chatMessageEntry = (EditText)findViewById(R.id.chat_message_entry);
         chatMessageEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -47,10 +53,8 @@ public class MainActivity extends AppCompatActivity {
                         // TODO #2: Rather than "sending" the message via a Toast, we want to write
                         // it to the RTDB here instead. (No need to add it to the messagesList;
                         // we'll setup Firebase to do that automatically for us.)
-                        Toast.makeText(
-                                chatMessageEntry.getContext(),
-                                "Message is: " + chatMessageEntry.getText(),
-                                Toast.LENGTH_SHORT).show();
+                        DatabaseReference newMessageRef = messagesRef.push();
+                        newMessageRef.setValue(chatMessageEntry.getText().toString());
                         chatMessageEntry.setText("");
                         return true;
                     }
@@ -62,29 +66,50 @@ public class MainActivity extends AppCompatActivity {
         messagesList.setLayoutManager(new LinearLayoutManager(this));
 
         // TODO #4a: Remove the placeholder strings.
-        List<String> placeholderStrings = new ArrayList<>();
-        for (int i=0; i<1000; i++) {
-            placeholderStrings.add("item" + i);
-        }
 
         // TODO #4b: Pass in a DatabaseReference pointing to the messages node rather than a list of
         // placeholder strings.
-        messagesList.setAdapter(new ChatViewAdapter(placeholderStrings));
+        messagesList.setAdapter(new ChatViewAdapter(messagesRef));
     }
 
     private static class ChatViewAdapter extends RecyclerView.Adapter<ChatViewAdapter.ViewHolder>
     {
         // TODO #3: Rather than a list of placeholder strings, use a List of messages. (So really,
         // just rename placeholderStrings to messages and initialize it to an empty list.)
-        private final List<String> placeholderStrings;
+        private final List<String> messages = new ArrayList<>();
 
         // TODO #4b: Pass in a DatabaseReference pointing to the messages node rather than a list of
         // placeholder strings.
-        ChatViewAdapter(List<String> placeholderStrings) {
-            this.placeholderStrings = placeholderStrings;
-
+        ChatViewAdapter(DatabaseReference messagesRef) {
             // TODO #5: Load up the initial collection of messages from the database. You'll
             // probably want to limit this to something reasonable; perhaps 100.
+            messagesRef.limitToLast(100).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                    messages.add(0, dataSnapshot.getValue(String.class));
+                    while (messages.size() > 100)
+                    {
+                        messages.remove(messages.size()-1);
+                    }
+                    notifyDataSetChanged();
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
         }
 
         /**
@@ -109,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         public void onBindViewHolder(ChatViewAdapter.ViewHolder viewHolder, int position) {
-            viewHolder.setTextContents(placeholderStrings.get(position));
+            viewHolder.setTextContents(messages.get(position));
         }
 
         /**
@@ -120,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         public int getItemCount() {
-            return placeholderStrings.size();
+            return messages.size();
         }
 
         /**
