@@ -31,13 +31,13 @@ This is not an official Google product.
     * On the Verify Configuration screen, click Finish.
     * Click the 'play' button on the newly created AVD to launch it.
 1. Checkout this project, and build it under the `start` directory.
-    * `git clone https://github.com/?/YetAnotherChatApp`
+    * `git clone https://github.com/rsgowman/YetAnotherChatApp`
     * In Android Studio, open YetAnotherChatApp/start.
     * Click the 'Run app' button. (^R)
     * It should look like this:
 
 ![Screenshot of the example app in
-action](https://github.com/?/YetAnotherChatApp/YetAnotherChatAppScreenShot.png)
+action](https://github.com/rsgowman/YetAnotherChatApp/YetAnotherChatAppScreenShot.png)
 
 
 ## Step 1: Optional: s/example.com/yourdomainhere.com/
