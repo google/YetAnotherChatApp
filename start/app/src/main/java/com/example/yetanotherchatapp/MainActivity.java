@@ -35,11 +35,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // TODO #1: Retrieve and store a reference to the Firebase Database. We'll store/retrieve
+        // messages via a "messages" node. (This node does not need to exist prior to using it;
+        // Firebase will create it automatically for us in this case.)
+
         final EditText chatMessageEntry = (EditText)findViewById(R.id.chat_message_entry);
         chatMessageEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                     if (actionId == EditorInfo.IME_ACTION_SEND) {
+                        // TODO #2: Rather than "sending" the message via a Toast, we want to write
+                        // it to the RTDB here instead. (No need to add it to the messagesList;
+                        // we'll setup Firebase to do that automatically for us.)
                         Toast.makeText(
                                 chatMessageEntry.getContext(),
                                 "Message is: " + chatMessageEntry.getText(),
@@ -54,19 +61,30 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView messagesList = (RecyclerView)findViewById(R.id.messages_view);
         messagesList.setLayoutManager(new LinearLayoutManager(this));
 
+        // TODO #4a: Remove the placeholder strings.
         List<String> placeholderStrings = new ArrayList<>();
         for (int i=0; i<1000; i++) {
             placeholderStrings.add("item" + i);
         }
+
+        // TODO #4b: Pass in a DatabaseReference pointing to the messages node rather than a list of
+        // placeholder strings.
         messagesList.setAdapter(new ChatViewAdapter(placeholderStrings));
     }
 
     private static class ChatViewAdapter extends RecyclerView.Adapter<ChatViewAdapter.ViewHolder>
     {
+        // TODO #3: Rather than a list of placeholder strings, use a List of messages. (So really,
+        // just rename placeholderStrings to messages and initialize it to an empty list.)
         private final List<String> placeholderStrings;
 
+        // TODO #4b: Pass in a DatabaseReference pointing to the messages node rather than a list of
+        // placeholder strings.
         ChatViewAdapter(List<String> placeholderStrings) {
             this.placeholderStrings = placeholderStrings;
+
+            // TODO #5: Load up the initial collection of messages from the database. You'll
+            // probably want to limit this to something reasonable; perhaps 100.
         }
 
         /**
