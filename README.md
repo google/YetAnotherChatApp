@@ -37,7 +37,7 @@ This is not an official Google product.
     * It should look like this:
 
 ![Screenshot of the example app in
-action](https://github.com/google/YetAnotherChatApp/YetAnotherChatAppScreenShot.png)
+action](https://github.com/google/YetAnotherChatApp/blob/master/YetAnotherChatAppScreenShot.png)
 
 
 ## Step 1: Optional: s/example.com/yourdomainhere.com/
