@@ -1,0 +1,127 @@
+<h1>YetAnotherChatApp</h1>
+
+<input id="message"/>
+<button onclick="sendMessage()">Send</button>
+
+<div id="chatArea">
+  <p>placeholder</p>
+</div>
+
+
+
+<script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.12.1/firebase-firestore.js"></script>
+<script>
+  // TODO #1: Initialize Firebase.
+  // Steps:
+  // - goto console.firebase.google.com and create a project
+  // - On the resulting 'get started here' page, click 'add firebase to your
+  //   web app'
+  // - That should being up a code snippet that looks like the code below this
+  //   comment. Copy + paste the config portion of that code here (replacing
+  //   the placeholder code.)
+
+  // Initialize Firebase
+  var config = {
+    apiKey: "...",
+    authDomain: "...",
+    databaseURL: "...",
+    projectId: "...",
+    storageBucket: "...",
+    messagingSenderId: "...",
+  };
+  firebase.initializeApp(config);
+</script>
+
+<script>
+  var db = null;
+  var messagesCollection = null;
+
+  window.onload = function() {
+    appendMessageToChatArea("hello, world!");
+
+    // TODO #2: Connect to the Firestore Database
+    // Hints:
+    // - https://firebase.google.com/docs/reference/js/firebase.firestore.Firestore
+    db = firebase.firestore();
+
+    // TODO #3: Retrieve a reference to the "messages" collection.
+    // Hints:
+    // - https://firebase.google.com/docs/reference/js/firebase.firestore.Firestore#collection
+    messagesCollection = db.collection("messages");
+
+    // TODO #5: Register a listener to append messages to the chat area every
+    // time they're added to the Firestore database.
+    // Hints:
+    // - To order the collection by a field, use:
+    //   https://firebase.google.com/docs/reference/js/firebase.firestore.CollectionReference#orderBy
+    // - To listen to changes to the messagesCollection, use:
+    //   https://firebase.google.com/docs/reference/js/firebase.firestore.CollectionReference#onSnapshot
+    // - To examine changes on the resulting querySnapshot, use:
+    //   https://firebase.google.com/docs/reference/js/firebase.firestore.QuerySnapshot#docChanges
+    // - To examine the type of change, use:
+    //   https://firebase.google.com/docs/reference/js/firebase.firestore.DocumentChange#type
+    // - To examine the changed document, use:
+    //   https://firebase.google.com/docs/reference/js/firebase.firestore.DocumentChange#doc
+    // - To get the documents contents, use:
+    //   https://firebase.google.com/docs/reference/js/firebase.firestore.QueryDocumentSnapshot#data
+    messagesCollection.orderBy("timestamp").onSnapshot(function(querySnapshot) {
+      querySnapshot.docChanges.forEach(function(change) {
+        if (change.type === "added") {
+          appendMessageToChatArea(change.doc.data().msg);
+        }
+        // "modified", "removed" ignored.
+      });
+    });
+  };
+
+  function sendMessage() {
+    var inputElement = document.getElementById("message");
+    // TODO #4: Rather than sending the message to the chat area directly,
+    // instead, send the message to Firestore. To do this create a document
+    // with two fields; 'msg' indicating the message text, and 'timestamp'
+    // indicating the server timestamp
+    // (firebase.firestore.FieldValue.serverTimestamp()).
+    // Hints:
+    // - https://firebase.google.com/docs/reference/js/firebase.firestore.CollectionReference#add
+    messagesCollection.add({
+      msg: inputElement.value,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // clear the text input so the user can input another message 
+    inputElement.value = "";
+  }
+
+  /**
+   * Appends the specified string to the chat area.
+   */
+  function appendMessageToChatArea(msg) {
+    // create the new chat message
+    var chatMessageElement = document.createElement('p');
+    chatMessageElement.innerHTML = escapeHtml(msg);
+
+    // add to the chat area
+    var chatArea = document.getElementById("chatArea");
+    chatArea.appendChild(chatMessageElement);
+  }
+
+  /**
+   * Escape html.
+   *
+   * "Borrowed" from stackoverflow:
+   * https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
+   *
+   * If you're using a web framework, it probably provides similar
+   * functionality out of the box, which would be preferred to rolling your own
+   * (as is done here.)
+   */
+  function escapeHtml(unsafe) {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+  }
+</script>
